@@ -1,2 +1,2 @@
-int  OpenFile(char nomFichier[],int nb_sec);
-void WriteFile(unsigned char son[],int taille);
+int  CreerFichierSon(char nomFichier[],int nb_canaux,int nb_sec);
+void EnregistrerFichierSon(unsigned char son[],int taille);

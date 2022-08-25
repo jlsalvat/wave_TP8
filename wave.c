@@ -103,51 +103,55 @@ struct wave {
 FILE *fich ;
 struct wave wav = { 0 };
 
-int InitWave(struct wave *wav, int nb_sec) {
+int InitWave(int nb_canaux,int nb_sec) {
 	/* Les constantes symboliques */
-	strncpy(wav->riff, "RIFF", 4);
-	strncpy(wav->wave, "WAVE", 4);
-	strncpy(wav->fmt, "fmt ", 4);
-	strncpy(wav->Ndata, "data", 4);
+	strncpy(wav.riff, "RIFF", 4);
+	strncpy(wav.wave, "WAVE", 4);
+	strncpy(wav.fmt, "fmt ", 4);
+	strncpy(wav.Ndata, "data", 4);
 
-	wav->subTaille1 = T_PCM;
-	wav->formatAudio = PCM;
-	wav->nombreCanaux = MONO;
-	wav->freqEch = F_8K;
-	wav->bitsParEch = BPE_8;
-	wav->ByteRate = wav->freqEch * wav->nombreCanaux * (wav->bitsParEch / 8);
-	wav->align = wav->nombreCanaux * (wav->bitsParEch / 8);
+	wav.subTaille1 = T_PCM;
+	wav.formatAudio = PCM;
+	wav.nombreCanaux = nb_canaux;
+	wav.freqEch = F_48K;
+	wav.bitsParEch = BPE_8;
+	wav.ByteRate = wav.freqEch * wav.nombreCanaux * (wav.bitsParEch / 8);
+	wav.align = wav.nombreCanaux * (wav.bitsParEch / 8);
 
 	/* On peut calculer subTaille2 en fonction du byterate. Ce qui nous donne : */
-	wav->subTaille2 = wav->ByteRate * nb_sec;
+	wav.subTaille2 = wav.ByteRate * nb_sec;
 
 	/* On calcule la taille du fichier */
-	wav->taille = wav->subTaille2 + 44 - 8;
+	wav.taille = wav.subTaille2 + 44 - 8;
 
 	/* On alloue la partie données */
-	wav->data = malloc(wav->subTaille2);
-	return wav->subTaille2;
+	wav.data = malloc(wav.subTaille2);
+	return wav.subTaille2;
 }
 
-void OpenFile(char nomFichier[], int nb_sec)
+void CreerFichierSon(char nomFichier[],int nb_canaux, int nb_sec)
 {
 	fich = fopen(nomFichier, "wb+");
 
 	if (fich == NULL){
-        printf("impossible de creer le fichier test.wav\n FIN DU PROG \n");
+        printf("impossible de creer le fichier %s\n FIN DU PROG \n",nomFichier);
         return EXIT_FAILURE;
 	}
+	else
+        printf("creation du fichier %s\n", nomFichier);
 	//init de la structure de données associée au fichier wav
-	InitWave(&wav, nb_sec);
+	InitWave(nb_canaux, nb_sec);
 }
-void WriteFile(unsigned char son[],int taille){
+void EnregistrerFichierSon(unsigned char son[],int taille){
     //on copie le contenu du tableau son dans wav.data
     memcpy( wav.data, son, taille );
 	/* On écris l'en-tête SANS les données */
+	printf("copie de l'entete\n");
 	fwrite(&wav, T_ENTETE, 1, fich);
 	/* On écris les data */
+	printf("copie des donnees : %d echantillons\n", taille);
 	fwrite(wav.data, taille, 1, fich);
-
+    printf("enregistrement et fermeture du fichier");
 	/* On libère notre mémoire, et on ferme le fichier */
 	free(wav.data);
 	fclose(fich);
